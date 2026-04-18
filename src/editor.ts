@@ -5,6 +5,8 @@ import type { PerfectDraftCardConfig } from "./types.js";
 import { GLASS_SIZES, DEFAULT_GLASS_SIZE, DOMAIN } from "./const.js";
 import { getAllBeers } from "./beer-catalog.js";
 
+const EDITOR_VERSION = "0.1.0-b2";
+
 interface DiscoveredDevice {
   deviceId: string;
   name: string;
@@ -76,6 +78,7 @@ export class PerfectDraftCardEditor extends LitElement {
 
     return html`
       <div class="editor">
+        <div class="version">PerfectDraft Card Editor v${EDITOR_VERSION} · ${this._devices.length} device(s) found</div>
         ${this._devices.length === 0
           ? html`<div class="warning">No PerfectDraft devices found. Please install and configure the PerfectDraft integration first.</div>`
           : html`
@@ -167,6 +170,12 @@ export class PerfectDraftCardEditor extends LitElement {
         color: var(--primary-text-color, #fff);
         font-size: 1em;
         box-sizing: border-box;
+      }
+      .version {
+        font-size: 0.75em;
+        opacity: 0.4;
+        text-align: right;
+        margin-bottom: 12px;
       }
       .warning {
         padding: 12px;
