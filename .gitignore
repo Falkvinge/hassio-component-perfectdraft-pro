@@ -16,4 +16,3 @@ k8s-token-extractor.yaml
 
 # Build artifacts
 node_modules/
-dist/

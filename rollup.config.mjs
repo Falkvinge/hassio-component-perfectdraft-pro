@@ -17,7 +17,7 @@ export default {
       format: { comments: false },
     }),
     copy({
-      targets: [{ src: "src/assets/**/*", dest: "dist/assets" }],
+      targets: [{ src: "src/assets/kegs", dest: "dist" }],
     }),
   ],
 };
