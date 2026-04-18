@@ -18,7 +18,7 @@ import {
 } from "./beer-catalog.js";
 import "./editor.js";
 
-const CARD_VERSION = "0.1.0";
+const CARD_VERSION = "0.1.6";
 
 function getCardBaseUrl(): string {
   const scripts = document.querySelectorAll("script[src]");
@@ -185,7 +185,10 @@ export class PerfectDraftCard extends LitElement {
                style="background: linear-gradient(135deg, ${beer.colors.primary}dd, ${beer.colors.primary}88);">
             <div class="beer-logo-area">
               ${beer.imagePath
-                ? html`<img class="beer-logo" src="${beer.imagePath.startsWith("http") ? beer.imagePath : getCardBaseUrl() + beer.imagePath}" alt="${beer.name}" />`
+                ? html`<img class="beer-logo"
+                        src="${beer.imagePath.startsWith("http") ? beer.imagePath : getCardBaseUrl() + beer.imagePath}"
+                        alt="${beer.name}"
+                        @error=${(e: Event) => { const img = e.target as HTMLImageElement; const fallback = img.parentElement!.querySelector('.beer-logo-text'); if (!fallback) { img.style.display = 'none'; const div = document.createElement('div'); div.className = 'beer-logo-text'; div.style.color = beer.colors.text; div.textContent = beer.name.charAt(0); img.parentElement!.appendChild(div); }}} />`
                 : html`<div class="beer-logo-text" style="color: ${beer.colors.text};">${beer.name.charAt(0)}</div>`
               }
             </div>
