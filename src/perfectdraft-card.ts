@@ -226,6 +226,7 @@ export class PerfectDraftCard extends LitElement {
   private _renderEmojiGrid(count: number): TemplateResult {
     const maxGlasses = Math.floor(KEG_TOTAL_VOLUME_ML / this._glassSize);
     const cols = maxGlasses <= 10 ? 5 : 6;
+    const rows = Math.ceil(maxGlasses / cols);
     const slots = [];
     for (let i = 0; i < maxGlasses; i++) {
       slots.push(i < count
@@ -234,7 +235,7 @@ export class PerfectDraftCard extends LitElement {
       );
     }
     return html`
-      <div class="emoji-grid" style="grid-template-columns: repeat(${cols}, 1fr);">
+      <div class="emoji-grid" style="grid-template-columns: repeat(${cols}, 1fr); grid-template-rows: repeat(${rows}, 1fr);">
         ${slots}
       </div>
     `;
@@ -458,18 +459,21 @@ export class PerfectDraftCard extends LitElement {
       /* === KEG EMOJI GRID === */
       .emoji-grid {
         display: grid;
-        gap: 2px;
         justify-items: center;
         align-items: center;
+        align-content: stretch;
         width: 100%;
+        height: 100%;
         flex: 1;
-        align-content: center;
         padding: 0;
-        font-size: min(4.5vw, 3.5em);
       }
       .glass {
-        line-height: 1;
-        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        font-size: min(7vw, 5em);
       }
       .glass.empty {
         opacity: 0.15;
