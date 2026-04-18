@@ -78,13 +78,15 @@ export class PerfectDraftCard extends LitElement {
   }
 
   public static getStubConfig(hass: any): Record<string, unknown> {
-    const entities = Object.keys(hass.states).filter(
-      (e) => e.startsWith("sensor.") && e.includes("perfectdraft"),
-    );
-    if (entities.length > 0) {
-      return { device_id: "", beer_name: "Stella Artois", glass_size: DEFAULT_GLASS_SIZE };
+    const entityReg: Record<string, any> = hass.entities || {};
+    const deviceIds = new Set<string>();
+    for (const entry of Object.values(entityReg)) {
+      if (entry.platform === DOMAIN && entry.device_id) {
+        deviceIds.add(entry.device_id);
+      }
     }
-    return { device_id: "", beer_name: "Stella Artois", glass_size: DEFAULT_GLASS_SIZE };
+    const firstDevice = deviceIds.size === 1 ? [...deviceIds][0] : "";
+    return { device_id: firstDevice, beer_name: "Stella Artois", glass_size: DEFAULT_GLASS_SIZE };
   }
 
   public static getConfigElement(): HTMLElement {
@@ -108,21 +110,18 @@ export class PerfectDraftCard extends LitElement {
 
     if (this._entityIds.temperature) return;
 
-    const allEntities = Object.keys(this.hass.states);
-    const pdEntities = allEntities.filter(
-      (e) => e.startsWith("sensor.") && e.includes(DOMAIN),
-    );
+    const entityReg: Record<string, any> = this.hass.entities || {};
 
-    for (const eid of pdEntities) {
-      const entityObj = this.hass.states[eid];
-      if (!entityObj) continue;
+    for (const [entityId, entry] of Object.entries(entityReg)) {
+      if (entry.platform !== DOMAIN || entry.device_id !== this._config.device_id) continue;
 
-      if (eid.endsWith("_temperature")) {
-        this._entityIds.temperature = eid;
-      } else if (eid.endsWith("_keg_remaining")) {
-        this._entityIds.kegRemaining = eid;
-      } else if (eid.endsWith("_keg_freshness")) {
-        this._entityIds.kegFreshness = eid;
+      const key = entry.translation_key;
+      if (key === "temperature") {
+        this._entityIds.temperature = entityId;
+      } else if (key === "keg_remaining") {
+        this._entityIds.kegRemaining = entityId;
+      } else if (key === "keg_freshness") {
+        this._entityIds.kegFreshness = entityId;
       }
     }
   }
