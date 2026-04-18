@@ -91,4 +91,4 @@ The card reads these sensors from the PerfectDraft integration:
 
 ## License
 
-MIT
+This project was entirely AI-generated. No human creative input was involved in the code authorship. Copyright is not applicable; this work is in the public domain where applicable, or otherwise not subject to copyright protection.
