@@ -224,12 +224,21 @@ export class PerfectDraftCard extends LitElement {
   }
 
   private _renderEmojiGrid(count: number): TemplateResult {
-    if (count === 0) {
-      return html`<div class="emoji-grid" style="font-size: 3em; opacity: 0.3;">🍺</div>`;
+    const maxGlasses = Math.floor(KEG_TOTAL_VOLUME_ML / this._glassSize);
+    const cols = maxGlasses <= 10 ? 5 : 6;
+    const size = maxGlasses <= 10 ? 3.2 : maxGlasses <= 12 ? 2.8 : maxGlasses <= 18 ? 2.4 : 2;
+    const slots = [];
+    for (let i = 0; i < maxGlasses; i++) {
+      slots.push(i < count
+        ? html`<span class="glass full">🍺</span>`
+        : html`<span class="glass empty">🍺</span>`
+      );
     }
-    const size = count <= 5 ? 4 : count <= 10 ? 3 : count <= 18 ? 2.2 : 1.8;
-    const emojis = "🍺".repeat(count);
-    return html`<div class="emoji-grid" style="font-size: ${size}em;">${emojis}</div>`;
+    return html`
+      <div class="emoji-grid" style="grid-template-columns: repeat(${cols}, 1fr); font-size: ${size}em;">
+        ${slots}
+      </div>
+    `;
   }
 
   private _renderEmptyKeg(): TemplateResult {
@@ -447,11 +456,20 @@ export class PerfectDraftCard extends LitElement {
 
       /* === KEG EMOJI GRID === */
       .emoji-grid {
-        text-align: center;
-        line-height: 1.25;
-        word-break: break-all;
+        display: grid;
+        gap: 2px;
+        justify-items: center;
+        align-items: center;
         max-width: 100%;
         padding: 0 8px;
+      }
+      .glass {
+        line-height: 1;
+        text-align: center;
+      }
+      .glass.empty {
+        opacity: 0.15;
+        filter: grayscale(1);
       }
       .count-label {
         margin-top: 12px;
