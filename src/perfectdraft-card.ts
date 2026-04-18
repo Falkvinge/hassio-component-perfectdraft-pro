@@ -226,7 +226,6 @@ export class PerfectDraftCard extends LitElement {
   private _renderEmojiGrid(count: number): TemplateResult {
     const maxGlasses = Math.floor(KEG_TOTAL_VOLUME_ML / this._glassSize);
     const cols = maxGlasses <= 10 ? 5 : 6;
-    const size = maxGlasses <= 10 ? 3.2 : maxGlasses <= 12 ? 2.8 : maxGlasses <= 18 ? 2.4 : 2;
     const slots = [];
     for (let i = 0; i < maxGlasses; i++) {
       slots.push(i < count
@@ -235,7 +234,7 @@ export class PerfectDraftCard extends LitElement {
       );
     }
     return html`
-      <div class="emoji-grid" style="grid-template-columns: repeat(${cols}, 1fr); font-size: ${size}em;">
+      <div class="emoji-grid" style="grid-template-columns: repeat(${cols}, 1fr);">
         ${slots}
       </div>
     `;
@@ -388,12 +387,13 @@ export class PerfectDraftCard extends LitElement {
       }
 
       .label-zone {
-        flex: 1;
+        flex: 1 1 25%;
+        max-width: 30%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 20px 16px;
+        padding: 24px 20px;
         cursor: pointer;
         user-select: none;
         border-radius: var(--ha-card-border-radius, 12px) 0 0 var(--ha-card-border-radius, 12px);
@@ -404,12 +404,12 @@ export class PerfectDraftCard extends LitElement {
       }
 
       .keg-zone {
-        flex: 2;
+        flex: 3;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 20px 16px;
+        padding: 16px 20px;
         cursor: pointer;
         user-select: none;
         position: relative;
@@ -420,8 +420,9 @@ export class PerfectDraftCard extends LitElement {
 
       /* === BEER LABEL === */
       .beer-logo-area {
-        width: 100px;
-        height: 120px;
+        flex: 1;
+        width: 80%;
+        max-height: 55%;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -433,23 +434,23 @@ export class PerfectDraftCard extends LitElement {
         object-fit: contain;
       }
       .beer-logo-text {
-        font-size: 4em;
+        font-size: 5em;
         font-weight: bold;
         opacity: 0.4;
       }
       .temperature {
-        font-size: 2.4em;
+        font-size: 3em;
         font-weight: 300;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
       }
       .beer-name {
-        font-size: 1.3em;
+        font-size: 1.6em;
         font-weight: bold;
         text-align: center;
         line-height: 1.2;
       }
       .beer-style {
-        font-size: 0.8em;
+        font-size: 0.95em;
         margin-top: 4px;
         text-align: center;
       }
@@ -460,8 +461,11 @@ export class PerfectDraftCard extends LitElement {
         gap: 2px;
         justify-items: center;
         align-items: center;
-        max-width: 100%;
-        padding: 0 8px;
+        width: 100%;
+        flex: 1;
+        align-content: center;
+        padding: 0;
+        font-size: min(4.5vw, 3.5em);
       }
       .glass {
         line-height: 1;
@@ -472,27 +476,33 @@ export class PerfectDraftCard extends LitElement {
         filter: grayscale(1);
       }
       .count-label {
-        margin-top: 12px;
-        font-size: 1.1em;
+        margin-top: 8px;
+        font-size: 1.3em;
         opacity: 0.6;
+        flex-shrink: 0;
       }
 
       /* === EMPTY KEG === */
       .empty-keg {
         text-align: center;
         opacity: 0.7;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
       }
       .empty-icon {
-        font-size: 5em;
+        font-size: 6em;
         margin-bottom: 8px;
       }
       .empty-title {
-        font-size: 1.6em;
+        font-size: 2em;
         font-weight: bold;
         color: #db4437;
       }
       .empty-subtitle {
-        font-size: 1em;
+        font-size: 1.2em;
         opacity: 0.6;
         margin-top: 4px;
       }
