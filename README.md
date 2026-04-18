@@ -4,6 +4,8 @@ A custom Lovelace card for the [PerfectDraft Pro Home Assistant integration](htt
 
 Designed and optimised for the Sonoff NSPanel Pro 120 in landscape mode, but works on any HA dashboard.
 
+![PerfectDraft Card showing Leffe Blonde at 3°C with 18 glasses remaining](docs/screenshot.png)
+
 ## Features
 
 - **Beer emoji pictogram** — see how many glasses remain in your keg at a glance
