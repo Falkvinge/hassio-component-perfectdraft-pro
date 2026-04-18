@@ -20,6 +20,17 @@ import "./editor.js";
 
 const CARD_VERSION = "0.1.0";
 
+function getCardBaseUrl(): string {
+  const scripts = document.querySelectorAll("script[src]");
+  for (const s of scripts) {
+    const src = (s as HTMLScriptElement).src;
+    if (src.includes("perfectdraft-card")) {
+      return src.substring(0, src.lastIndexOf("/") + 1);
+    }
+  }
+  return "/hacsfiles/perfectdraft-card/";
+}
+
 function storageKey(deviceId: string, suffix: string): string {
   return `perfectdraft-card:${deviceId}:${suffix}`;
 }
@@ -175,7 +186,7 @@ export class PerfectDraftCard extends LitElement {
                style="background: linear-gradient(135deg, ${beer.colors.primary}dd, ${beer.colors.primary}88);">
             <div class="beer-logo-area">
               ${beer.imagePath
-                ? html`<img class="beer-logo" src="${beer.imagePath}" alt="${beer.name}" />`
+                ? html`<img class="beer-logo" src="${beer.imagePath.startsWith("http") ? beer.imagePath : getCardBaseUrl() + beer.imagePath}" alt="${beer.name}" />`
                 : html`<div class="beer-logo-text" style="color: ${beer.colors.text};">${beer.name.charAt(0)}</div>`
               }
             </div>
