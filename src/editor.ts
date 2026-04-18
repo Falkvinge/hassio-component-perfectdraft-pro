@@ -8,7 +8,7 @@ import { getAllBeers } from "./beer-catalog.js";
 interface DiscoveredDevice {
   deviceId: string;
   name: string;
-  entityIds: string[];
+  entities: Map<string, string>;
 }
 
 @customElement("perfectdraft-card-editor")
@@ -31,25 +31,23 @@ export class PerfectDraftCardEditor extends LitElement {
   private _discoverDevices(): void {
     if (!this.hass) return;
 
-    const pdEntities = Object.keys(this.hass.states).filter(
-      (e) => e.startsWith("sensor.") && e.includes(DOMAIN),
-    );
-
+    const entityReg: Record<string, any> = this.hass.entities || {};
+    const deviceReg: Record<string, any> = this.hass.devices || {};
     const deviceMap = new Map<string, DiscoveredDevice>();
 
-    for (const eid of pdEntities) {
-      const match = eid.match(/^sensor\.(.+?)_(?:temperature|keg_remaining|keg_freshness|connection|door|pours|last_pour|firmware|mode)$/);
-      if (!match) continue;
+    for (const [entityId, entry] of Object.entries(entityReg)) {
+      if (entry.platform !== DOMAIN) continue;
+      const devId = entry.device_id;
+      if (!devId) continue;
 
-      const prefix = match[1];
-      if (!deviceMap.has(prefix)) {
-        deviceMap.set(prefix, {
-          deviceId: prefix,
-          name: prefix.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-          entityIds: [],
-        });
+      if (!deviceMap.has(devId)) {
+        const device = deviceReg[devId];
+        const name = device?.name_by_user || device?.name || devId;
+        deviceMap.set(devId, { deviceId: devId, name, entities: new Map() });
       }
-      deviceMap.get(prefix)!.entityIds.push(eid);
+
+      const key = entry.translation_key || entry.original_name?.toLowerCase()?.replace(/\s+/g, "_") || entityId;
+      deviceMap.get(devId)!.entities.set(key, entityId);
     }
 
     this._devices = [...deviceMap.values()];
