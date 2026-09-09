@@ -4,6 +4,8 @@ export interface PerfectDraftCardConfig {
   type?: string;
   device_id: string;
   glass_size?: number;
+  /** Overrides auto-detection. Left unset, the tapped beer is read from the integration. */
+  beer_name?: string;
   custom_beers?: CustomBeerEntry[];
   layout?: CardLayout;
   matrix_columns?: number | "auto";

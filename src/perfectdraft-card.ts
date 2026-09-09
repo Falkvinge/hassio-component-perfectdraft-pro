@@ -1,4 +1,4 @@
-import { LitElement, html, css, nothing, type CSSResultGroup, type TemplateResult } from "lit";
+import { LitElement, html, css, nothing, type CSSResultGroup, type PropertyValues, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import type { PerfectDraftCardConfig, CardLayout } from "./types.js";
@@ -17,10 +17,18 @@ import {
   resolveBeer,
   getBeerByKegId,
   getBreweryLogo,
+  getCustomFallback,
 } from "./beer-catalog.js";
 import "./editor.js";
 
-const CARD_VERSION = "0.2.0";
+const CARD_VERSION = "0.3.1";
+
+const NO_KEG_LABEL = "No keg detected";
+
+/** Stand-in used when nothing is tapped, so the card never names a beer it has not detected. */
+function noKegPlaceholder(): BeerEntry {
+  return { ...getCustomFallback(), slug: "no-keg", name: NO_KEG_LABEL };
+}
 
 interface RenderCtx {
   beer: BeerEntry;
@@ -65,6 +73,7 @@ export class PerfectDraftCard extends LitElement {
   @state() private _failedImages = new Set<string>();
 
   private _entityIds: { temperature?: string; kegRemaining?: string; kegFreshness?: string; kegProduct?: string; kegName?: string } = {};
+  private _entitiesResolved = false;
 
   public setConfig(config: PerfectDraftCardConfig): void {
     if (!config.device_id) {
@@ -72,6 +81,16 @@ export class PerfectDraftCard extends LitElement {
         "PerfectDraft Card: No device configured. Please use the visual editor to select a PerfectDraft device.",
       );
     }
+
+    // Entity IDs and the detected beer belong to a specific device, so switching
+    // devices in the editor has to invalidate them. Without this the card keeps
+    // reading the previous device's sensors.
+    if (this._config?.device_id !== config.device_id) {
+      this._entityIds = {};
+      this._entitiesResolved = false;
+      this._beer = undefined;
+    }
+
     this._config = { ...config };
 
     this._layout = resolveLayout(config.layout) as CardLayout;
@@ -138,17 +157,20 @@ export class PerfectDraftCard extends LitElement {
     this._resolveEntities();
   }
 
-  updated(changedProps: Map<string, unknown>): void {
-    super.updated(changedProps);
-    if (changedProps.has("hass")) {
+  protected willUpdate(changedProps: PropertyValues): void {
+    if (changedProps.has("hass") || changedProps.has("_config")) {
       this._resolveEntities();
+      this._updateDetectedBeer();
     }
   }
 
   private _resolveEntities(): void {
     if (!this.hass || !this._config?.device_id) return;
 
-    if (this._entityIds.temperature) return;
+    // Keep scanning until the expected set is complete. Stopping as soon as any
+    // one entity is found would strand a card whose keg sensors only appear
+    // later, e.g. after the user updates the integration.
+    if (this._entitiesResolved) return;
 
     const entityReg: Record<string, any> = this.hass.entities || {};
 
@@ -167,6 +189,67 @@ export class PerfectDraftCard extends LitElement {
       } else if (key === "keg_name") {
         this._entityIds.kegName = entityId;
       }
+    }
+
+    this._entitiesResolved = Boolean(
+      this._entityIds.temperature &&
+        this._entityIds.kegRemaining &&
+        this._entityIds.kegFreshness &&
+        this._entityIds.kegProduct &&
+        this._entityIds.kegName,
+    );
+  }
+
+  /** True when the device is present but predates the integration release that added the keg sensors. */
+  private get _kegSensorsMissing(): boolean {
+    return (
+      Boolean(this._entityIds.temperature) &&
+      !this._entityIds.kegProduct &&
+      !this._entityIds.kegName
+    );
+  }
+
+  private get _beerDetected(): boolean {
+    return this._beer !== undefined;
+  }
+
+  /**
+   * Resolves the beer to display, in precedence order: the manual override, then
+   * a catalog entry matched on the reported product ID, then the reported keg
+   * name. Leaves `_beer` undefined when none of those yield anything, which is
+   * what puts the card into its no-keg state.
+   */
+  private _updateDetectedBeer(): void {
+    if (!this._config) return;
+
+    const override = this._config.beer_name?.trim();
+    if (override) {
+      this._assignBeer(resolveBeer(override, this._config.custom_beers));
+      return;
+    }
+
+    const idState = this._getState(this._entityIds.kegProduct);
+    const nameState = this._getState(this._entityIds.kegName);
+    const reportedName =
+      nameState && nameState !== "unavailable" && nameState !== "unknown" ? nameState : undefined;
+
+    let detected: BeerEntry | undefined;
+    if (idState && /^\d+$/.test(idState)) {
+      // A recognised product ID keeps the curated catalog name. The integration's
+      // catalog is a product listing, so its names carry pack sizes and
+      // qualifiers we do not want on the label.
+      detected = getBeerByKegId(idState);
+    }
+    if (!detected && reportedName) {
+      detected = resolveBeer(reportedName, this._config.custom_beers);
+    }
+
+    this._assignBeer(detected);
+  }
+
+  private _assignBeer(beer: BeerEntry | undefined): void {
+    if (beer?.slug !== this._beer?.slug || beer?.name !== this._beer?.name) {
+      this._beer = beer;
     }
   }
 
@@ -200,18 +283,8 @@ export class PerfectDraftCard extends LitElement {
       return html`<ha-card><div class="error">No device configured. Please edit this card to select a PerfectDraft device.</div></ha-card>`;
     }
 
-    // Auto-detect the tapped beer from the PerfectDraft integration: product ID first, name second.
-    const idState = this._getState(this._entityIds.kegProduct);
-    const nameState = this._getState(this._entityIds.kegName);
-    const validName = nameState && nameState !== "unavailable" && nameState !== "unknown" ? nameState : undefined;
-    let live: BeerEntry | undefined;
-    if (idState && /^\d+$/.test(idState)) live = getBeerByKegId(idState);
-    if (!live && validName) live = resolveBeer(validName, this._config.custom_beers);
-    if (live) {
-      const label = validName ?? live.name; // authoritative PerfectDraft name wins for the label
-      if (live.slug !== this._beer?.slug || this._beer?.name !== label) {
-        this._beer = { ...live, name: label };
-      }
+    if (this._kegSensorsMissing) {
+      return html`<ha-card><div class="error">This card needs the keg sensors added in PerfectDraft integration 0.4.0. Please update the integration, then reload this page.</div></ha-card>`;
     }
 
     const temp = parseNumericState(this._getState(this._entityIds.temperature));
@@ -222,7 +295,7 @@ export class PerfectDraftCard extends LitElement {
     const volumeMl = kegPct !== null ? (kegPct / 100) * KEG_TOTAL_VOLUME_ML : null;
     const glassCount = volumeMl !== null ? Math.floor(volumeMl / this._glassSize) : null;
 
-    const beer = this._beer ?? resolveBeer(undefined);
+    const beer = this._beer ?? noKegPlaceholder();
     const ctx: RenderCtx = { beer, temp, kegPct, freshDays, tier, glassCount };
 
     const body =
@@ -258,6 +331,10 @@ export class PerfectDraftCard extends LitElement {
 
   /** Tiered visual: keg photo -> brewery logo -> generated tinted silhouette. */
   private _renderVisual(beer: BeerEntry): TemplateResult {
+    // Nothing tapped means no product to picture, so skip straight to the
+    // neutral silhouette rather than the photo and logo tiers.
+    if (!this._beerDetected) return this._renderKegSilhouette(beer);
+
     const kegSrc = beer.imagePath
       ? beer.imagePath.startsWith("http")
         ? beer.imagePath
@@ -282,7 +359,8 @@ export class PerfectDraftCard extends LitElement {
 
   /** Generated, asset-free keg silhouette tinted from the beer palette, with its initial. */
   private _renderKegSilhouette(beer: BeerEntry): TemplateResult {
-    const initial = (beer.name.charAt(0) || "?").toUpperCase();
+    // No initial in the no-keg state: a letter would read as a beer's identity.
+    const initial = this._beerDetected ? (beer.name.charAt(0) || "?").toUpperCase() : "";
     const { primary, secondary } = beer.colors;
     return html`
       <svg class="gen-svg" viewBox="0 0 120 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label="${beer.name}">
@@ -326,7 +404,9 @@ export class PerfectDraftCard extends LitElement {
       <div class="beer-logo-area">${this._renderVisual(beer)}</div>
       <div class="temperature" style="color: ${beer.colors.text};">❄ ${this._tempText(temp)}</div>
       <div class="beer-name" style="color: ${beer.colors.text};">${beer.name}</div>
-      <div class="beer-style" style="color: ${beer.colors.text}88;">${beer.brewery} · ${beer.abv}%</div>
+      ${this._beerDetected
+        ? html`<div class="beer-style" style="color: ${beer.colors.text}88;">${beer.brewery} · ${beer.abv}%</div>`
+        : nothing}
     `;
   }
 
