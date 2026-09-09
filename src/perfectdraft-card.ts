@@ -81,6 +81,16 @@ export class PerfectDraftCard extends LitElement {
         "PerfectDraft Card: No device configured. Please use the visual editor to select a PerfectDraft device.",
       );
     }
+
+    // Entity IDs and the detected beer belong to a specific device, so switching
+    // devices in the editor has to invalidate them. Without this the card keeps
+    // reading the previous device's sensors.
+    if (this._config?.device_id !== config.device_id) {
+      this._entityIds = {};
+      this._entitiesResolved = false;
+      this._beer = undefined;
+    }
+
     this._config = { ...config };
 
     this._layout = resolveLayout(config.layout) as CardLayout;

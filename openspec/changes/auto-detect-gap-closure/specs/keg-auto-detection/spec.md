@@ -81,3 +81,9 @@ The card SHALL continue attempting entity resolution until the expected sensors 
 #### Scenario: Resolution stops once complete
 - **WHEN** all expected sensor entities for the device have been resolved
 - **THEN** the card SHALL NOT repeat the registry scan on subsequent `hass` updates
+
+#### Scenario: Configured device changes
+- **WHEN** the card's configured `device_id` changes, for example because the user picked a different device in the editor
+- **THEN** the card SHALL discard the previously resolved entity IDs and the previously detected beer
+- **THEN** the card SHALL resolve entities afresh for the newly configured device
+- **THEN** the card SHALL NOT display values read from the previous device

@@ -38,6 +38,7 @@
 
 - [x] 6.1 Replace the `if (this._entityIds.temperature) return;` latch in `_resolveEntities` with a condition that only stops once the expected sensor set is resolved
 - [x] 6.2 Verify that keg sensors added after first render are picked up on a later `hass` update without a browser reload, and that the scan stops once complete
+- [x] 6.3 Invalidate the resolved entity IDs and detected beer in `setConfig` when `device_id` changes, so switching devices in the editor does not keep reading the previous device's sensors (pre-existing bug, surfaced by review)
 
 ## 7. Documentation and release
 
