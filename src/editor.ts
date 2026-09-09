@@ -3,7 +3,6 @@ import { customElement, property, state } from "lit/decorators.js";
 
 import type { PerfectDraftCardConfig } from "./types.js";
 import { GLASS_SIZES, DEFAULT_GLASS_SIZE, DOMAIN, LAYOUTS, DEFAULT_LAYOUT } from "./const.js";
-import { getAllBeers } from "./beer-catalog.js";
 
 const EDITOR_VERSION = "0.2.0";
 
@@ -74,8 +73,6 @@ export class PerfectDraftCardEditor extends LitElement {
       return html`<div>Loading...</div>`;
     }
 
-    const allBeers = getAllBeers();
-
     return html`
       <div class="editor">
         <div class="version">PerfectDraft Card Editor v${EDITOR_VERSION} · ${this._devices.length} device(s) found</div>
@@ -100,22 +97,6 @@ export class PerfectDraftCardEditor extends LitElement {
               </div>
             `
         }
-
-        <div class="field">
-          <label>Default Beer</label>
-          <select
-            .value=${this._config.beer_name ?? ""}
-            @change=${(e: Event) => this._updateConfig("beer_name", (e.target as HTMLSelectElement).value)}
-          >
-            ${allBeers.map(
-              (b) => html`
-                <option value=${b.name} ?selected=${this._config.beer_name === b.name}>
-                  ${b.name} (${b.brewery})
-                </option>
-              `,
-            )}
-          </select>
-        </div>
 
         <div class="field">
           <label>Default Glass Size</label>
@@ -176,16 +157,6 @@ export class PerfectDraftCardEditor extends LitElement {
             .value=${this._config.max_matrix_width ?? ""}
             placeholder="(unset — fill the zone)"
             @input=${(e: InputEvent) => this._updateConfig("max_matrix_width", (e.target as HTMLInputElement).value || undefined)}
-          />
-        </div>
-
-        <div class="field">
-          <label>Beer Entity (optional — for automatic beer detection)</label>
-          <input
-            type="text"
-            .value=${this._config.beer_entity ?? ""}
-            placeholder="sensor.perfectdraft_pro_keg_name"
-            @input=${(e: InputEvent) => this._updateConfig("beer_entity", (e.target as HTMLInputElement).value || undefined)}
           />
         </div>
       </div>
