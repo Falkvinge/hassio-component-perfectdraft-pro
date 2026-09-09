@@ -5,7 +5,7 @@ import type { PerfectDraftCardConfig } from "./types.js";
 import { GLASS_SIZES, DEFAULT_GLASS_SIZE, DOMAIN, LAYOUTS, DEFAULT_LAYOUT } from "./const.js";
 import { getAllBeers } from "./beer-catalog.js";
 
-const EDITOR_VERSION = "0.3.0";
+const EDITOR_VERSION = "0.3.1";
 
 interface DiscoveredDevice {
   deviceId: string;
