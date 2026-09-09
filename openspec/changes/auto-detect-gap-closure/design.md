@@ -94,6 +94,13 @@ Users on integration < 0.4.0 see the new stale-integration message. That is a st
 
 ## Open Questions
 
-- Should the no-keg state hide the glass-count matrix entirely, or show it at zero? Showing zero glasses against a neutral palette is probably clearer that the machine is empty rather than the card being broken, but this is a visual call best made against a real dashboard.
-- `42863` "1L Stein" is merchandise, not a beer. It gets a catalogue entry so the ID resolves, but it may warrant a distinct presentation rather than being dressed up as a beer.
-- Where the upstream catalogue snapshot should live — `scripts/` next to the check, or `docs/` as reference material. No strong argument either way.
+All three were resolved during implementation:
+
+- **Glass matrix in the no-keg state** — shows an empty grid with a `--` count rather than hiding. This falls out of the existing `_renderKegContent` path when keg percentage is unknown, and reads as "machine is empty" rather than "card is broken". Still worth a second look on a real dashboard.
+- **`42863` "1L Stein"** — given its own catalogue entry under a `NON-BEER` section, presented as brewery "PerfectDraft", style "Merchandise", 0% ABV, on a neutral grey palette. The ID resolves, and it is not dressed up as a beer.
+- **Snapshot location** — `scripts/keg-catalog.reference.json`, next to the check that consumes it, with `_source` and `_upstreamCommit` keys recording provenance.
+
+### Raised by implementation
+
+- `kegId` is modelled as one ID per catalogue entry, which assumes a bijection between upstream product IDs and card entries. That held for all 114 IDs, but only after splitting Northern Monk into two entries. If PerfectDraft ever issues two IDs for a genuinely identical product, this model forces a duplicate entry rather than a list of aliases. Worth revisiting as `kegIds?: string[]` if that case appears; not worth the churn across 114 entries today.
+- Brand colours for the 36 new entries are researched judgement, not verified against physical kegs. Wrong values degrade to slightly-off tinting rather than a wrong beer name, and the least familiar brands (`romola`, `via-roma`) were given deliberately conservative palettes.

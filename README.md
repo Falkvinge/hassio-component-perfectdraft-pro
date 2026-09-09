@@ -10,15 +10,15 @@ Designed and optimised for the Sonoff NSPanel Pro 120 in landscape mode, but wor
 
 - **Five layouts** — landscape, portrait, compact, hero, or single-vessel gauge; choose what fits your dashboard (defaults to landscape, so existing cards are unchanged)
 - **Beer emoji pictogram** — see how many glasses remain in your keg at a glance, in a grid that shrinks to fit narrow cards
-- **Built-in beer catalog** — 75+ PerfectDraft beers, 68 with real keg photos; brand-tinted fallback art for the rest so every beer looks intentional
+- **Automatic beer detection** — the card reads the tapped keg from the integration and shows the right beer on its own; nothing to select
+- **Built-in beer catalog** — every keg the integration can identify, 68 with real keg photos; brand-tinted fallback art for the rest so every beer looks intentional
 - **Glass size selector** — tap the emoji zone to choose between 250 mL, 330 mL, 500 mL, UK pint, or US pint
-- **Beer selector** — tap the label zone to pick your current beer from the catalog
 - **Freshness warnings** — escalating CSS-animated alerts as your keg approaches its 30-day expiry
 - **UI-driven configuration** — no YAML editing required; everything is set up through the visual card editor
 
 ## Requirements
 
-- [PerfectDraft Pro integration](https://github.com/Falkvinge/hassio-integration-perfectdraft-pro) installed and configured
+- [PerfectDraft Pro integration](https://github.com/Falkvinge/hassio-integration-perfectdraft-pro) **0.4.0 or later**, installed and configured — the card reads the keg sensors added in that release
 - Home Assistant 2024.8 or later
 
 ## Installation
@@ -44,20 +44,30 @@ Designed and optimised for the Sonoff NSPanel Pro 120 in landscape mode, but wor
 
 1. Edit your dashboard → Add Card → search for "PerfectDraft Card"
 2. The editor auto-discovers your PerfectDraft device(s)
-3. Select your default beer and glass size
-4. Done!
+3. Pick your glass size and layout
+4. Done! The beer is detected automatically from the keg in your machine.
+
+### Beer detection
+
+The card identifies the tapped beer from the integration's keg sensors, matching
+on the keg's product ID first and its reported name second. When no keg is
+tapped, the card says so rather than showing a beer.
+
+If your keg is not recognised, or is shown as the wrong beer, set **Beer
+override** in the card editor (or `beer_name` in YAML). That wins over detection.
+Reports of unrecognised kegs are welcome as issues — the fix is usually a
+one-line catalog addition.
 
 ### YAML reference (for power users)
 
 ```yaml
 type: custom:perfectdraft-card
 device_id: "perfectdraft_pro"
-beer_name: "Leffe Blonde"
 glass_size: 330
 layout: landscape                 # landscape | portrait | compact | hero | vessel
+# beer_name: "Leffe Blonde"       # override auto-detection; normally leave unset
 # matrix_columns: auto            # "auto" or a fixed number of emoji columns
 # max_matrix_width: "480px"       # cap + centre the emoji grid on wide cards
-# beer_entity: sensor.perfectdraft_pro_keg_name  # future: auto beer detection
 # custom_beers:
 #   - name: "My Homebrew IPA"
 #     brewery: "Home"
@@ -70,10 +80,10 @@ layout: landscape                 # landscape | portrait | compact | hero | vess
 
 | Action | What happens |
 |--------|-------------|
-| Tap the **left zone** (beer label) | Opens beer selection dialog |
 | Tap the **right zone** (emoji grid) | Opens glass size selection dialog |
 
-Selections persist in your browser across page refreshes.
+The beer is detected rather than chosen, so the label zone is display-only. Your
+glass size choice persists in your browser across page refreshes.
 
 ## Layouts
 
@@ -108,6 +118,11 @@ The card reads these sensors from the PerfectDraft integration:
 | `*_temperature` | Beer temperature display |
 | `*_keg_remaining` | Glasses remaining calculation |
 | `*_keg_freshness` | Freshness warning system |
+| `*_keg_product` | Identifying the tapped beer (product ID match) |
+| `*_keg` | Identifying the tapped beer (name match fallback) |
+
+The last two arrive with integration 0.4.0. If they are missing, the card tells
+you to update the integration instead of guessing at a beer.
 
 ## License
 

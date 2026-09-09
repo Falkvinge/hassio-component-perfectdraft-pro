@@ -3,8 +3,9 @@ import { customElement, property, state } from "lit/decorators.js";
 
 import type { PerfectDraftCardConfig } from "./types.js";
 import { GLASS_SIZES, DEFAULT_GLASS_SIZE, DOMAIN, LAYOUTS, DEFAULT_LAYOUT } from "./const.js";
+import { getAllBeers } from "./beer-catalog.js";
 
-const EDITOR_VERSION = "0.2.0";
+const EDITOR_VERSION = "0.3.0";
 
 interface DiscoveredDevice {
   deviceId: string;
@@ -130,6 +131,34 @@ export class PerfectDraftCardEditor extends LitElement {
           </select>
         </div>
 
+        <div class="field">
+          <label>Beer override</label>
+          <select
+            .value=${this._config.beer_name ?? ""}
+            @change=${(e: Event) =>
+              this._updateConfig("beer_name", (e.target as HTMLSelectElement).value || undefined)}
+          >
+            <option value="" ?selected=${!this._config.beer_name}>Auto-detect from the machine</option>
+            ${getAllBeers().map(
+              (b) => html`
+                <option value=${b.name} ?selected=${this._config.beer_name === b.name}>
+                  ${b.name} (${b.brewery})
+                </option>
+              `,
+            )}
+            ${(this._config.custom_beers ?? []).map(
+              (cb) => html`
+                <option value=${cb.name} ?selected=${this._config.beer_name === cb.name}>
+                  ${cb.name} (custom)
+                </option>
+              `,
+            )}
+          </select>
+          <div class="hint">
+            Leave on auto-detect. Only set this if your keg is not recognised or is shown wrongly.
+          </div>
+        </div>
+
         <div class="advanced-heading">Emoji matrix (advanced)</div>
 
         <div class="field">
@@ -193,6 +222,11 @@ export class PerfectDraftCardEditor extends LitElement {
         opacity: 0.4;
         text-align: right;
         margin-bottom: 12px;
+      }
+      .hint {
+        font-size: 0.8em;
+        opacity: 0.55;
+        margin-top: 4px;
       }
       .advanced-heading {
         font-size: 0.8em;

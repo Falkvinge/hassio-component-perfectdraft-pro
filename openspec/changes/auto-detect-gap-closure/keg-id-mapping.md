@@ -9,6 +9,22 @@ The three tables below cover the remaining 57 IDs plus the 12 label divergences.
 Every mapping in table A was checked by hand; a naive fuzzy match got five of
 them wrong (see the notes under the table).
 
+## Correction found during implementation
+
+Product ID `48061` was **mis-mapped** by PR #1. It sat on the card's
+`northern-monk` entry, but upstream `48061` is "Northern Monk Faith" while that
+card entry is "Northern Monk A Little Faith" — genuinely different beers (Faith
+is a ~5.4% pale ale, A Little Faith a ~4% session pale). The correct ID for the
+existing entry is `47389`.
+
+Resolved by pointing `northern-monk` at `47389` and giving `48061` its own
+`northern-monk-faith` entry sharing the same keg photograph. This is the only
+mis-mapping among the 57 IDs PR #1 already covered; the other 11 divergences in
+table C are naming style rather than wrong beers.
+
+Net effect: 22 IDs mapped onto existing entries, 36 new catalogue entries
+(the 35 in table B plus `northern-monk-faith`), 114/114 covered.
+
 ## A. Add `kegId` to an existing card catalogue entry — 22 IDs
 
 | Product ID | Integration name | Card slug | Card curated name | Ships keg art? |
@@ -94,6 +110,9 @@ so it needs an entry to avoid an unresolved-ID state.
 The card recognises these product IDs but currently displays the integration's
 catalogue name. Once the label prefers the curated name, these revert to the
 left-hand column. Listed so the change in rendered output is reviewable.
+
+Row `48061` is the exception noted above: it is a wrong-beer mapping rather than
+a naming difference, and was fixed by splitting the entry.
 
 | Product ID | Card curated name (will be shown) | Integration name (shown today) |
 |---|---|---|
