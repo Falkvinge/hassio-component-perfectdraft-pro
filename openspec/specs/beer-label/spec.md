@@ -31,7 +31,7 @@ The card SHALL display the current beer temperature prominently in the left zone
 The card SHALL display the detected beer's name in the label zone below the temperature, using the card's own curated name where it has one.
 
 #### Scenario: Beer detected
-- **WHEN** a beer has been determined by detection or by the `beer_name` override
+- **WHEN** a beer has been determined by detection or by a `beer_overrides` entry
 - **THEN** the card SHALL display that beer's full name as text in the label zone
 
 #### Scenario: Detected by product ID

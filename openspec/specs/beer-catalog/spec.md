@@ -28,11 +28,11 @@ The card SHALL include static logo images for beers in the built-in catalog.
 - **THEN** the card SHALL display the beer's brand color palette as the visual background instead of an image
 
 ### Requirement: Custom beer entries via configuration
-The card SHALL support user-defined beer entries that extend or override the built-in catalog, reachable through the `beer_name` override.
+The card SHALL support user-defined beer entries that extend or override the built-in catalog, reachable through a `beer_overrides` entry.
 
 #### Scenario: Custom beer defined in config
 - **WHEN** the card config includes a `custom_beers` array with entries containing at minimum a `name` field
-- **THEN** those beers SHALL be resolvable by the `beer_name` override alongside built-in entries
+- **THEN** those beers SHALL be resolvable by a `beer_overrides` entry alongside built-in entries
 - **THEN** custom entries SHALL support optional fields: `color_primary`, `color_secondary`, `color_text`, `image_url`, `brewery`, `style`, `abv`
 
 #### Scenario: Custom beer overrides built-in
