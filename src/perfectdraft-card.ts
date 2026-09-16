@@ -21,7 +21,7 @@ import {
 } from "./beer-catalog.js";
 import "./editor.js";
 
-const CARD_VERSION = "0.3.1";
+const CARD_VERSION = "0.4.0";
 
 const NO_KEG_LABEL = "No keg detected";
 
@@ -71,6 +71,8 @@ export class PerfectDraftCard extends LitElement {
   @state() private _maxMatrixWidth?: string;
   @state() private _showGlassDialog = false;
   @state() private _failedImages = new Set<string>();
+  @state() private _overrideActive = false;
+  @state() private _detectedName?: string;
 
   private _entityIds: { temperature?: string; kegRemaining?: string; kegFreshness?: string; kegProduct?: string; kegName?: string } = {};
   private _entitiesResolved = false;
@@ -89,6 +91,8 @@ export class PerfectDraftCard extends LitElement {
       this._entityIds = {};
       this._entitiesResolved = false;
       this._beer = undefined;
+      this._overrideActive = false;
+      this._detectedName = undefined;
     }
 
     this._config = { ...config };
@@ -214,37 +218,49 @@ export class PerfectDraftCard extends LitElement {
   }
 
   /**
-   * Resolves the beer to display, in precedence order: the manual override, then
-   * a catalog entry matched on the reported product ID, then the reported keg
-   * name. Leaves `_beer` undefined when none of those yield anything, which is
-   * what puts the card into its no-keg state.
+   * Resolves the beer to display, in precedence order: an override recorded
+   * against the reported product ID, then a catalog entry matched on that ID,
+   * then the reported keg name. Leaves `_beer` undefined when none of those
+   * yield anything, which is what puts the card into its no-keg state.
    */
   private _updateDetectedBeer(): void {
     if (!this._config) return;
 
-    const override = this._config.beer_name?.trim();
-    if (override) {
-      this._assignBeer(resolveBeer(override, this._config.custom_beers));
-      return;
-    }
-
     const idState = this._getState(this._entityIds.kegProduct);
+    const productId =
+      idState && idState !== "unavailable" && idState !== "unknown" ? idState : undefined;
     const nameState = this._getState(this._entityIds.kegName);
     const reportedName =
       nameState && nameState !== "unavailable" && nameState !== "unknown" ? nameState : undefined;
 
     let detected: BeerEntry | undefined;
-    if (idState && /^\d+$/.test(idState)) {
+    if (productId && /^\d+$/.test(productId)) {
       // A recognised product ID keeps the curated catalog name. The integration's
       // catalog is a product listing, so its names carry pack sizes and
       // qualifiers we do not want on the label.
-      detected = getBeerByKegId(idState);
+      detected = getBeerByKegId(productId);
     }
     if (!detected && reportedName) {
       detected = resolveBeer(reportedName, this._config.custom_beers);
     }
 
+    // An override is bound to the keg it corrects, so it retires itself when the
+    // keg changes. The card cannot clean up config — `config-changed` is only
+    // honoured while the editor is open — so the binding has to come from the
+    // lookup rather than from pruning stale entries. No product ID means no
+    // possible match, which keeps the no-keg state unreachable from config.
+    const override = productId ? this._config.beer_overrides?.[productId]?.trim() : undefined;
+    if (override) {
+      const corrected = resolveBeer(override, this._config.custom_beers);
+      this._assignBeer(corrected);
+      this._overrideActive = true;
+      this._detectedName = detected && detected.name !== corrected.name ? detected.name : undefined;
+      return;
+    }
+
     this._assignBeer(detected);
+    this._overrideActive = false;
+    this._detectedName = undefined;
   }
 
   private _assignBeer(beer: BeerEntry | undefined): void {
@@ -407,6 +423,7 @@ export class PerfectDraftCard extends LitElement {
       ${this._beerDetected
         ? html`<div class="beer-style" style="color: ${beer.colors.text}88;">${beer.brewery} · ${beer.abv}%</div>`
         : nothing}
+      ${this._renderOverrideMarker(beer.colors.text)}
     `;
   }
 
@@ -450,7 +467,7 @@ export class PerfectDraftCard extends LitElement {
       <div class="card-content layout-compact-content">
         <div class="compact-visual">${this._renderVisual(c.beer)}</div>
         <div class="compact-main">
-          <div class="compact-name">${c.beer.name}</div>
+          <div class="compact-name">${this._renderCompactOverrideGlyph()}${c.beer.name}</div>
           <div class="compact-bar">
             <div class="compact-bar-fill" style="width: ${pct}%; background: ${c.beer.colors.primary};"></div>
           </div>
@@ -474,6 +491,7 @@ export class PerfectDraftCard extends LitElement {
             <span class="hero-temp">❄ ${this._tempText(c.temp)}</span>
           </div>
           <div class="hero-count">${this._countText(c.glassCount)}</div>
+          ${this._renderOverrideMarker()}
         </div>
         ${this._renderFreshnessIndicator(c.freshDays, c.tier)}
       </div>
@@ -490,6 +508,7 @@ export class PerfectDraftCard extends LitElement {
         </div>
         <div class="vessel-mid" @click=${this._openGlassDialog}>${this._renderGlassVessel(c.beer, pct)}</div>
         <div class="vessel-count" @click=${this._openGlassDialog}>${this._countText(c.glassCount)}</div>
+        ${this._renderOverrideMarker()}
         ${this._renderFreshnessIndicator(c.freshDays, c.tier)}
       </div>
     `;
@@ -526,6 +545,34 @@ export class PerfectDraftCard extends LitElement {
         <div class="empty-subtitle">Time to reload!</div>
       </div>
     `;
+  }
+
+  private _overrideTitle(): string {
+    const base = "This beer comes from a correction saved for this keg in the card config.";
+    return this._detectedName ? `${base} The machine reports ${this._detectedName}.` : base;
+  }
+
+  /**
+   * Marks an applied correction, so an override is never mistaken for a
+   * detection result. Shown even when it agrees with detection: an override
+   * that agrees is redundant and worth seeing so it can be removed.
+   */
+  private _renderOverrideMarker(color?: string): TemplateResult | typeof nothing {
+    if (!this._overrideActive) return nothing;
+    const text = this._detectedName
+      ? `⚙ Override · machine reports ${this._detectedName}`
+      : "⚙ Override";
+    return html`
+      <div class="override-marker" style="${color ? `color: ${color};` : ""}" title="${this._overrideTitle()}">
+        ${text}
+      </div>
+    `;
+  }
+
+  /** Compact has no room for the pill, so the override becomes a glyph on the name. */
+  private _renderCompactOverrideGlyph(): TemplateResult | typeof nothing {
+    if (!this._overrideActive) return nothing;
+    return html`<span class="compact-override" title="${this._overrideTitle()}">⚙</span>`;
   }
 
   private _renderFreshnessIndicator(days: number | null, tier: FreshnessTier): TemplateResult {
@@ -912,6 +959,29 @@ export class PerfectDraftCard extends LitElement {
         font-size: 1.2em;
         opacity: 0.6;
         margin-top: 4px;
+      }
+
+      /* === OVERRIDE MARKER === */
+      .override-marker {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: 500;
+        text-align: center;
+        /* Neutral grey plus a currentColor border, so the pill reads against
+           both the dark card and the light end of the label palettes. */
+        background: rgba(127, 127, 127, 0.18);
+        border: 1px solid currentColor;
+        opacity: 0.8;
+        cursor: help;
+      }
+      .compact-override {
+        margin-right: 5px;
+        font-size: 0.85em;
+        opacity: 0.65;
+        cursor: help;
       }
 
       /* === FRESHNESS INDICATOR === */

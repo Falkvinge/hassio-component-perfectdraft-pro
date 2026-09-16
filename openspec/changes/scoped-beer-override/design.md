@@ -100,6 +100,6 @@ Rollback is a bundle revert. Since step 1 only ignores a key, a card configured 
 
 ## Open Questions
 
-- Exact wording and placement of the override marker per layout, especially `compact` and `vessel`, where horizontal space is tight.
+- ~~Exact wording and placement of the override marker per layout, especially `compact` and `vessel`, where horizontal space is tight.~~ Resolved in implementation: `landscape` and `portrait` carry the pill in the label zone, `hero` in the scrim, `vessel` under the count. `compact` has no room for a pill, so it prefixes the name with a `⚙` glyph carrying the same explanation in its tooltip. The pill is `inline-block` with a `currentColor` border so it shrink-wraps and reads against both the dark card and the light end of the label palettes.
 - Whether the editor's beer selector for a correction should offer the full catalogue or bias toward the detected beer's brewery, which is where sibling mis-mappings cluster.
 - Whether a mis-mapping corrected locally should prompt the user to report it upstream, given the fix belongs in the catalogue rather than in every affected user's config.

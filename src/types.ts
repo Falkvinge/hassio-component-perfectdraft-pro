@@ -4,8 +4,11 @@ export interface PerfectDraftCardConfig {
   type?: string;
   device_id: string;
   glass_size?: number;
-  /** Overrides auto-detection. Left unset, the tapped beer is read from the integration. */
-  beer_name?: string;
+  /**
+   * Corrections keyed by the product ID the integration reports, so an entry
+   * only applies while that keg is tapped and cannot outlive it.
+   */
+  beer_overrides?: Record<string, string>;
   custom_beers?: CustomBeerEntry[];
   layout?: CardLayout;
   matrix_columns?: number | "auto";
