@@ -1,11 +1,11 @@
-import { LitElement, html, css, type CSSResultGroup, type TemplateResult } from "lit";
+import { LitElement, html, css, nothing, type CSSResultGroup, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
 import type { PerfectDraftCardConfig } from "./types.js";
 import { GLASS_SIZES, DEFAULT_GLASS_SIZE, DOMAIN, LAYOUTS, DEFAULT_LAYOUT } from "./const.js";
-import { getAllBeers } from "./beer-catalog.js";
+import { getAllBeers, getBeerByKegId } from "./beer-catalog.js";
 
-const EDITOR_VERSION = "0.3.1";
+const EDITOR_VERSION = "0.4.0";
 
 interface DiscoveredDevice {
   deviceId: string;
@@ -59,6 +59,26 @@ export class PerfectDraftCardEditor extends LitElement {
     }
   }
 
+  /** The product ID the configured device reports right now, if any. */
+  private _currentProductId(): string | undefined {
+    const device = this._devices.find((d) => d.deviceId === this._config?.device_id);
+    const entityId = device?.entities.get("keg_product_id");
+    if (!entityId) return undefined;
+    const state = this.hass?.states[entityId]?.state;
+    return state && state !== "unavailable" && state !== "unknown" ? state : undefined;
+  }
+
+  /** Writes or clears one correction, keyed by the keg it corrects. */
+  private _setOverride(productId: string, beerName: string): void {
+    const next = { ...(this._config.beer_overrides ?? {}) };
+    if (beerName) {
+      next[productId] = beerName;
+    } else {
+      delete next[productId];
+    }
+    this._updateConfig("beer_overrides", Object.keys(next).length > 0 ? next : undefined);
+  }
+
   private _updateConfig(key: string, value: unknown): void {
     this._config = { ...this._config, [key]: value };
     const event = new CustomEvent("config-changed", {
@@ -67,6 +87,87 @@ export class PerfectDraftCardEditor extends LitElement {
       composed: true,
     });
     this.dispatchEvent(event);
+  }
+
+  /**
+   * A correction is recorded against the product ID currently in the machine, so
+   * it stops applying when that keg is swapped. Saved corrections are listed so
+   * an entry left over from an earlier keg is visible and removable.
+   */
+  private _renderOverrideSection(): TemplateResult {
+    const productId = this._currentProductId();
+    const active = productId ? (this._config.beer_overrides?.[productId] ?? "") : "";
+    const detected = productId ? getBeerByKegId(productId) : undefined;
+    const entries = Object.entries(this._config.beer_overrides ?? {});
+
+    return html`
+      <div class="advanced-heading">Beer detection</div>
+
+      <div class="field">
+        <label>Correct the beer for the keg in the machine</label>
+        <select
+          .value=${active}
+          ?disabled=${!productId}
+          @change=${(e: Event) => {
+            if (productId) this._setOverride(productId, (e.target as HTMLSelectElement).value);
+          }}
+        >
+          <option value="" ?selected=${!active}>Use auto-detection</option>
+          ${getAllBeers().map(
+            (b) => html`
+              <option value=${b.name} ?selected=${active === b.name}>${b.name} (${b.brewery})</option>
+            `,
+          )}
+          ${(this._config.custom_beers ?? []).map(
+            (cb) => html`<option value=${cb.name} ?selected=${active === cb.name}>${cb.name} (custom)</option>`,
+          )}
+        </select>
+        <div class="hint">
+          ${productId
+            ? html`
+                Applies only to the keg now in the machine — product ID ${productId}${detected
+                  ? `, detected as ${detected.name}`
+                  : ", not in the catalog"}. Swap kegs and it stops applying.
+              `
+            : "No keg detected right now. A correction is saved against the keg it corrects, so tap a keg first."}
+        </div>
+      </div>
+
+      ${entries.length > 0
+        ? html`
+            <div class="field">
+              <label>Saved corrections</label>
+              <div class="override-list">
+                ${entries.map(([id, name]) => {
+                  const catalog = getBeerByKegId(id);
+                  return html`
+                    <div class="override-row">
+                      <div class="override-text">
+                        <span class="override-beer">${name}</span>
+                        <span class="override-meta">
+                          ID ${id}${catalog ? ` · detected as ${catalog.name}` : ""}${id === productId
+                            ? " · applying now"
+                            : ""}
+                        </span>
+                      </div>
+                      <button
+                        class="override-remove"
+                        title="Remove this correction"
+                        @click=${() => this._setOverride(id, "")}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  `;
+                })}
+              </div>
+              <div class="hint">
+                Entries for kegs that are not in the machine have no effect. Remove them if you no longer want them.
+              </div>
+            </div>
+          `
+        : nothing}
+    `;
   }
 
   protected render(): TemplateResult {
@@ -131,33 +232,7 @@ export class PerfectDraftCardEditor extends LitElement {
           </select>
         </div>
 
-        <div class="field">
-          <label>Beer override</label>
-          <select
-            .value=${this._config.beer_name ?? ""}
-            @change=${(e: Event) =>
-              this._updateConfig("beer_name", (e.target as HTMLSelectElement).value || undefined)}
-          >
-            <option value="" ?selected=${!this._config.beer_name}>Auto-detect from the machine</option>
-            ${getAllBeers().map(
-              (b) => html`
-                <option value=${b.name} ?selected=${this._config.beer_name === b.name}>
-                  ${b.name} (${b.brewery})
-                </option>
-              `,
-            )}
-            ${(this._config.custom_beers ?? []).map(
-              (cb) => html`
-                <option value=${cb.name} ?selected=${this._config.beer_name === cb.name}>
-                  ${cb.name} (custom)
-                </option>
-              `,
-            )}
-          </select>
-          <div class="hint">
-            Leave on auto-detect. Only set this if your keg is not recognised or is shown wrongly.
-          </div>
-        </div>
+        ${this._renderOverrideSection()}
 
         <div class="advanced-heading">Emoji matrix (advanced)</div>
 
@@ -205,6 +280,51 @@ export class PerfectDraftCardEditor extends LitElement {
         font-weight: 500;
         margin-bottom: 4px;
         font-size: 0.9em;
+      }
+      .field select:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .override-list {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .override-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border: 1px solid var(--divider-color, #333);
+        border-radius: 4px;
+      }
+      .override-text {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .override-beer {
+        font-size: 0.95em;
+      }
+      .override-meta {
+        font-size: 0.75em;
+        opacity: 0.55;
+      }
+      .override-remove {
+        flex: 0 0 auto;
+        background: none;
+        border: none;
+        color: inherit;
+        opacity: 0.6;
+        font-size: 1em;
+        cursor: pointer;
+        padding: 4px 6px;
+        border-radius: 4px;
+      }
+      .override-remove:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.08);
       }
       .field select,
       .field input {

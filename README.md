@@ -38,6 +38,14 @@ Designed and optimised for the Sonoff NSPanel Pro 120 in landscape mode, but wor
 3. Go to **Settings → Dashboards → Resources** and add `/local/perfectdraft-card/perfectdraft-card.js` as a JavaScript Module
 4. Refresh your browser
 
+### Confirming which version is running
+
+Browsers cache dashboard resources aggressively, so after an update it is worth
+checking which bundle actually loaded. The card logs a `PERFECTDRAFT-CARD
+v<version>` banner to the browser console on load. If that version is not the one
+you installed, hard-reload the page (Ctrl/Cmd + Shift + R) — the card behaviour
+you are seeing is the old bundle's, not the new one's.
+
 ## Configuration
 
 **No YAML editing required.** Add the card through the HA dashboard UI:
@@ -53,10 +61,26 @@ The card identifies the tapped beer from the integration's keg sensors, matching
 on the keg's product ID first and its reported name second. When no keg is
 tapped, the card says so rather than showing a beer.
 
-If your keg is not recognised, or is shown as the wrong beer, set **Beer
-override** in the card editor (or `beer_name` in YAML). That wins over detection.
-Reports of unrecognised kegs are welcome as issues — the fix is usually a
-one-line catalog addition.
+If your keg is not recognised, or is shown as the wrong beer, use **Correct the
+beer for the keg in the machine** in the card editor. The correction is saved
+against that keg's product ID (`beer_overrides` in YAML), so it applies while
+that keg is tapped and stops applying when you swap kegs — a correction can
+never outlive the keg it was for. The card marks any beer it is showing because
+of a correction, so an override is never mistaken for a detection result.
+
+Reports of unrecognised or mis-detected kegs are welcome as issues — the fix is
+usually a one-line catalog addition, which is better for everyone than a local
+correction.
+
+#### Upgrading from 0.3.x or earlier
+
+`beer_name` is no longer supported and is ignored when present. Versions before
+0.3.0 required it — the editor always wrote it and new cards were seeded with
+it — and 0.3.1 then treated those leftover values as permanent overrides, which
+made cards show a beer that was no longer in the machine. Ignoring the key
+returns those cards to auto-detection. No automatic migration is possible,
+because the old value records no product ID; re-apply the correction from the
+editor if you still need it.
 
 ### YAML reference (for power users)
 
@@ -65,9 +89,10 @@ type: custom:perfectdraft-card
 device_id: "perfectdraft_pro"
 glass_size: 330
 layout: landscape                 # landscape | portrait | compact | hero | vessel
-# beer_name: "Leffe Blonde"       # override auto-detection; normally leave unset
 # matrix_columns: auto            # "auto" or a fixed number of emoji columns
 # max_matrix_width: "480px"       # cap + centre the emoji grid on wide cards
+# beer_overrides:                 # corrections keyed by keg product ID; normally unset
+#   "1095": "Leffe Ruby"          #   applies only while that keg is tapped
 # custom_beers:
 #   - name: "My Homebrew IPA"
 #     brewery: "Home"
