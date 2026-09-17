@@ -68,7 +68,7 @@ const CATALOG: BeerEntry[] = [
 
   // === LAGERS & PILSNERS ===
   { slug: "budweiser", name: "Budweiser", brewery: "Anheuser-Busch", style: "American Lager", abv: 5.0, colors: { primary: "#C8102E", secondary: "#FFF0F0", text: "#FFFFFF" }, kegId: "31747" },
-  { slug: "bud", name: "Anheuser-Busch Bud", brewery: "Anheuser-Busch", style: "American Lager", abv: 5.0, colors: { primary: "#C8102E", secondary: "#FFF0F0", text: "#FFFFFF" }, imagePath: kegImage("bud") },
+  { slug: "bud", name: "Anheuser-Busch Bud", brewery: "Anheuser-Busch", style: "American Lager", abv: 5.0, colors: { primary: "#C8102E", secondary: "#FFF0F0", text: "#FFFFFF" }, imagePath: kegImage("bud"), kegId: "48050" },
   { slug: "bud-light", name: "Bud Light", brewery: "Anheuser-Busch", style: "Light Lager", abv: 3.5, colors: { primary: "#004B8D", secondary: "#E8F4FF", text: "#FFFFFF" }, imagePath: kegImage("bud-light"), kegId: "42377" },
   { slug: "corona", name: "Corona Extra", brewery: "Grupo Modelo", style: "Mexican Lager", abv: 4.5, colors: { primary: "#FDB913", secondary: "#FFFCE5", text: "#00205B" }, imagePath: kegImage("corona"), kegId: "34493" },
   { slug: "corona-cero", name: "Corona Cero", brewery: "Grupo Modelo", style: "Non-Alcoholic Lager", abv: 0.0, colors: { primary: "#0073B1", secondary: "#E5F3FF", text: "#FFFFFF" }, imagePath: kegImage("corona-cero"), kegId: "43235" },

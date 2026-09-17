@@ -21,7 +21,7 @@ import {
 } from "./beer-catalog.js";
 import "./editor.js";
 
-const CARD_VERSION = "0.4.0";
+const CARD_VERSION = "0.4.1";
 
 const NO_KEG_LABEL = "No keg detected";
 
