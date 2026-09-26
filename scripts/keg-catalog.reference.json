@@ -1,6 +1,6 @@
 {
   "_source": "https://github.com/Falkvinge/hassio-integration-perfectdraft-pro/blob/main/custom_components/perfectdraft/keg_catalog.json",
-  "_upstreamCommit": "fc8a25c4",
+  "_upstreamCommit": "3b82df6e",
   "_note": "Reference snapshot for npm run check:catalog. Not used at runtime. Re-sync when the integration catalog changes.",
   "kegs": {
     "452": "Beck's Gold",
@@ -101,6 +101,7 @@
     "47523": "Anosteké Blonde",
     "47629": "Camden Eazy IPA",
     "47774": "Old Speckled Hen",
+    "47792": "Camden Eazy",
     "47816": "Corona Ligera",
     "47943": "Fuller's London Pride",
     "47962": "Bass Pale Ale",
