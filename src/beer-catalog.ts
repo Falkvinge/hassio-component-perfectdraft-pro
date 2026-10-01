@@ -137,6 +137,7 @@ const CATALOG: BeerEntry[] = [
   { slug: "ninkasi-flower", name: "Ninkasi Flower Lager", brewery: "Ninkasi Brasserie", style: "Dry-Hopped Lager", abv: 4.8, colors: { primary: "#B8C43C", secondary: "#F7FAE6", text: "#2C1A00" }, kegId: "44331" },
   { slug: "camden-marzen", name: "Camden Märzen", brewery: "Camden Town Brewery", style: "Märzen", abv: 5.4, colors: { primary: "#B5651D", secondary: "#FFF2E2", text: "#F5C242" }, kegId: "44474" },
   { slug: "camden-lager-top", name: "Camden Lager Top", brewery: "Camden Town Brewery", style: "Shandy", abv: 2.8, colors: { primary: "#E8C93C", secondary: "#FFFCE8", text: "#000000" }, kegId: "47429" },
+  { slug: "camden-stout", name: "Camden Stout", brewery: "Camden Town Brewery", style: "Stout", abv: 4.0, colors: { primary: "#1A0F0A", secondary: "#F2E6D8", text: "#F5C242" }, kegId: "48180" },
 
   // === ENGLISH & SCOTTISH ===
   { slug: "fullers-london-pride", name: "Fuller's London Pride", brewery: "Fuller's", style: "English Bitter", abv: 4.7, colors: { primary: "#7B241C", secondary: "#F5E6E0", text: "#FFFFFF" }, imagePath: kegImage("fullers-london-pride"), kegId: "47943" },
