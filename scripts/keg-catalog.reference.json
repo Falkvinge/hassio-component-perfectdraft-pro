@@ -1,6 +1,6 @@
 {
   "_source": "https://github.com/Falkvinge/hassio-integration-perfectdraft-pro/blob/main/custom_components/perfectdraft/keg_catalog.json",
-  "_upstreamCommit": "8b2c4418",
+  "_upstreamCommit": "1598e7b0",
   "_note": "Reference snapshot for npm run check:catalog. Not used at runtime. Re-sync when the integration catalog changes.",
   "kegs": {
     "452": "Beck's Gold",
@@ -25,7 +25,7 @@
     "2565": "Hoegaarden Rose",
     "3550": "Leffe Winter",
     "9156": "Leffe Royal Cascade",
-    "29745": "Lowenbrau Oktoberfestbier",
+    "29745": "Löwenbräu Oktoberfestbier",
     "29775": "Goose Island Midway",
     "29896": "Kwak",
     "29974": "Spaten",
