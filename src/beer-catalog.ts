@@ -104,8 +104,8 @@ const CATALOG: BeerEntry[] = [
   { slug: "haake-beck", name: "Haake-Beck", brewery: "Brauerei Beck & Co", style: "German Pilsner", abv: 4.9, colors: { primary: "#006838", secondary: "#E0F5E8", text: "#FFFFFF" }, imagePath: kegImage("haake-beck"), kegId: "47144" },
   { slug: "fruh-kolsch", name: "Früh Kölsch", brewery: "Cölner Hofbräu Früh", style: "Kölsch", abv: 4.8, colors: { primary: "#C8102E", secondary: "#FFF0F0", text: "#FFFFFF" }, imagePath: kegImage("fruh-kolsch"), kegId: "47977" },
 
-  { slug: "lowenbrau-oktoberfest", name: "Löwenbräu Oktoberfestbier", brewery: "Löwenbräu", style: "Märzen", abv: 6.1, colors: { primary: "#003DA5", secondary: "#E8F0FF", text: "#F5C242" }, kegId: "29745" },
-  { slug: "spaten-oktoberfest", name: "Spaten Oktoberfestbier", brewery: "Spaten-Franziskaner-Bräu", style: "Märzen", abv: 5.9, colors: { primary: "#A8641E", secondary: "#FFF2E0", text: "#FFFFFF" }, kegId: "33918" },
+  { slug: "lowenbrau-oktoberfest", name: "Löwenbräu Oktoberfestbier", brewery: "Löwenbräu", style: "Märzen", abv: 6.1, colors: { primary: "#003DA5", secondary: "#E8F0FF", text: "#F5C242" }, imagePath: kegImage("lowenbrau-oktoberfest"), kegId: "29745" },
+  { slug: "spaten-oktoberfest", name: "Spaten Oktoberfestbier", brewery: "Spaten-Franziskaner-Bräu", style: "Märzen", abv: 5.9, colors: { primary: "#A8641E", secondary: "#FFF2E0", text: "#FFFFFF" }, imagePath: kegImage("spaten-oktoberfest"), kegId: "33918" },
 
   // === CRAFT & IPA ===
   { slug: "goose-island-ipa", name: "Goose Island IPA", brewery: "Goose Island", style: "India Pale Ale", abv: 5.9, colors: { primary: "#D45500", secondary: "#FFF2E5", text: "#FFFFFF" }, imagePath: kegImage("goose-island-ipa"), kegId: "32816" },
