@@ -50,7 +50,7 @@ function e(e,t,r,s){var i,a=arguments.length,o=a<3?t:null===s?s=Object.getOwnPro
           `:K}
     `}render(){return this.hass?j`
       <div class="editor">
-        <div class="version">PerfectDraft Card Editor v${"0.4.3"} · ${this._devices.length} device(s) found</div>
+        <div class="version">PerfectDraft Card Editor v${"0.4.4"} · ${this._devices.length} device(s) found</div>
         ${0===this._devices.length?j`<div class="warning">No PerfectDraft devices found. Please install and configure the PerfectDraft integration first.</div>`:j`
               <div class="field">
                 <label>Device</label>
@@ -844,4 +844,4 @@ function e(e,t,r,s){var i,a=arguments.length,o=a<3?t:null===s?s=Object.getOwnPro
         padding: 16px;
         color: var(--error-color, #db4437);
       }
-    `}};e([ge({attribute:!1})],Me.prototype,"hass",void 0),e([pe()],Me.prototype,"_config",void 0),e([pe()],Me.prototype,"_beer",void 0),e([pe()],Me.prototype,"_glassSize",void 0),e([pe()],Me.prototype,"_layout",void 0),e([pe()],Me.prototype,"_matrixColumns",void 0),e([pe()],Me.prototype,"_maxMatrixWidth",void 0),e([pe()],Me.prototype,"_showGlassDialog",void 0),e([pe()],Me.prototype,"_failedImages",void 0),e([pe()],Me.prototype,"_overrideActive",void 0),e([pe()],Me.prototype,"_detectedName",void 0),Me=e([de("perfectdraft-card")],Me),window.customCards=window.customCards||[],window.customCards.push({type:"perfectdraft-card",name:"PerfectDraft Card",description:"Display PerfectDraft Pro keg status with beer emojis",preview:!0,documentationURL:"https://github.com/Falkvinge/hassio-component-perfectdraft-pro"}),console.info("%c PERFECTDRAFT-CARD %c v0.4.3 ","background: #f5a623; color: #000; font-weight: bold;","background: #333; color: #f5a623;");export{Me as PerfectDraftCard};
+    `}};e([ge({attribute:!1})],Me.prototype,"hass",void 0),e([pe()],Me.prototype,"_config",void 0),e([pe()],Me.prototype,"_beer",void 0),e([pe()],Me.prototype,"_glassSize",void 0),e([pe()],Me.prototype,"_layout",void 0),e([pe()],Me.prototype,"_matrixColumns",void 0),e([pe()],Me.prototype,"_maxMatrixWidth",void 0),e([pe()],Me.prototype,"_showGlassDialog",void 0),e([pe()],Me.prototype,"_failedImages",void 0),e([pe()],Me.prototype,"_overrideActive",void 0),e([pe()],Me.prototype,"_detectedName",void 0),Me=e([de("perfectdraft-card")],Me),window.customCards=window.customCards||[],window.customCards.push({type:"perfectdraft-card",name:"PerfectDraft Card",description:"Display PerfectDraft Pro keg status with beer emojis",preview:!0,documentationURL:"https://github.com/Falkvinge/hassio-component-perfectdraft-pro"}),console.info("%c PERFECTDRAFT-CARD %c v0.4.4 ","background: #f5a623; color: #000; font-weight: bold;","background: #333; color: #f5a623;");export{Me as PerfectDraftCard};
